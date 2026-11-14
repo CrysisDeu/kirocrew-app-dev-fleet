@@ -2,14 +2,16 @@
  * Dev Fleet API client, over the host's permission-scoped client (`useAppApi`).
  *
  * Most routes are served by the SPAWNED backend, reverse-proxied at
- * `/apps/dev-fleet/api/...`, which this app's `permissions.api` declares. Three are
+ * `/apps/dev-fleet/api/...`, which this app's `permissions.api` declares. Four are
  * served by the gateway process itself under `/api/apps/dev-fleet/...`:
  * `make-live` and `restart-gateway` touch the live-target pointer (or its cutover
- * latch), which is masked from the sandboxed backend and everything it spawns, and
+ * latch), which is masked from the sandboxed backend and everything it spawns,
  * `pod-token` mints a pod's dashboard token, which the pod refuses to issue to the
- * sandboxed backend. `postGateway` targets that namespace. The built-in's compiled
- * page called it as dashboard code; this bundle calls it through the scoped
- * client, which refuses it until the app's grant covers it (see PORTING.md).
+ * sandboxed backend, and `create-release-worktree` checks out the newest stable
+ * tag, which must run at a strict tier with credentials bind-masked: only a
+ * gateway-driven spawn gets that. `postGateway` targets that namespace. The
+ * built-in's compiled page called it as dashboard code; this bundle calls it
+ * through the scoped client, which admits only what `permissions.api` declares.
  *
  * A refusal is a `DevFleetApiError` carrying the status, the raw body and the
  * backend's own sentence (`{"error": ...}`), so the page can tell a state to act

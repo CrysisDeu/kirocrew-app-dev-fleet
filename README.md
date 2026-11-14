@@ -108,9 +108,10 @@ found** and tells you how to name one (see [Settings & data](#settings--data)).
 
 ## How to use it
 
-1. **Refresh.** The table refreshes itself every 12 seconds; **Refresh** reads
-   everything again now. Type in **Filter worktrees** to narrow the list, and use
-   the **Sort** box to order it by status, recent changes, name or how far behind.
+1. **Refresh.** The table refreshes itself every 12 seconds; **More actions →
+   Refresh** above the table reads everything again now. Type in **Filter
+   worktrees** to narrow the list, and use the **Sort** box to order it by status,
+   recent changes, name or how far behind.
 2. **Update main.** On the main row, choose **Pull+Build**: it pulls the latest
    main and rebuilds. Restart Kiro Crew afterwards to use the new build.
 3. **Try a branch.** On a feature row, choose **Provision** (once; it installs what
@@ -123,11 +124,13 @@ found** and tells you how to name one (see [Settings & data](#settings--data)).
    that checkout after a restart, and a banner offers **Switch back**.
 6. **Clean up.** Choose **Prune merged**, read the review, tick what to remove and
    choose **Remove selected**, or **Cancel** to remove nothing.
+7. **Check a release.** **More actions → Create worktree from latest stable**
+   checks out the newest stable Kiro Crew release as a worktree named
+   `release-channel-stable`, so you can start a pod on it and compare.
 
-Limits of this repository's copy today: **Make live**, **Restart gateway** and
-opening a pod are refused by Kiro Crew's permission check, because those three
-reach Kiro Crew's own routes outside what the app is allowed to call
-([PORTING.md](PORTING.md), gap 3). The copy that comes with Kiro Crew does them.
+**Make live**, **Restart gateway**, opening a pod and creating the release
+worktree call Kiro Crew's own routes for this app; the manifest declares each of
+them, the same list the copy that comes with Kiro Crew declares.
 
 ## Settings & data
 

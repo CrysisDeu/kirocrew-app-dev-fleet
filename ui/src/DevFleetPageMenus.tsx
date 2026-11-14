@@ -13,14 +13,21 @@ import { Ellipsis } from 'lucide-react'
 import { i18nT } from './i18n'
 
 /* ─── Sub-components ─── */
-interface MenuItemDef { label: string; icon?: ReactNode; onClick: () => void; disabled?: boolean; danger?: boolean; title?: string }
+interface MenuItemDef { label: string; icon?: ReactNode; onClick: () => void; disabled?: boolean; danger?: boolean; title?: string; hint?: string; testId?: string }
 // Row-actions dropdown geometry. The menu is portaled to the body-level overlay root so a row's
 // <Card overflow> can't clip it; these drive fixed positioning.
 const MENU_GAP = 6        // gap between trigger and menu
 const MENU_MARGIN = 8     // min gap from the viewport edge
 const MENU_ITEM_H = 32    // estimated per-item height for the flip decision
 const MENU_PAD = 8        // container vertical padding (4px top + 4px bottom)
-export function MenuBtn({ items }: { items: (MenuItemDef | null)[] }) {
+/**
+ * An item's `hint` is its `title` tooltip; the row menus' `title` is not rendered.
+ * `trigger` gives the menu a labelled trigger (its visible text is its accessible
+ * name, so it carries no `aria-label`); without it the trigger is the row menu's
+ * bare ellipsis. `busy` sets `aria-busy` on the trigger, `testId` its `data-testid`.
+ */
+interface MenuBtnProps { items: (MenuItemDef | null)[]; trigger?: ReactNode; busy?: boolean; testId?: string }
+export function MenuBtn({ items, trigger, busy, testId }: MenuBtnProps) {
   const [open, setOpen] = useState(false)
   // Holds no input, so a Crew switch closes it like a click outside (components/overlayRoot).
   useCloseWhenCrewHidden(open, useCallback(() => setOpen(false), []))
@@ -143,9 +150,11 @@ export function MenuBtn({ items }: { items: (MenuItemDef | null)[] }) {
 
   return (
     <span style={{ display: 'inline-flex' } as CSSProperties}>
-      <Btn ref={triggerRef} onClick={toggle} title={i18nT('pages.devFleetPage.more_actions')} aria-label={i18nT('pages.devFleetPage.more_actions')} aria-haspopup="menu" aria-expanded={open}>
-        <Ellipsis size={15} className="lucide-inline" />
-      </Btn>
+      {trigger
+        ? <Btn ref={triggerRef} onClick={toggle} aria-haspopup="menu" aria-expanded={open} aria-busy={busy} data-testid={testId}>{trigger}</Btn>
+        : <Btn ref={triggerRef} onClick={toggle} title={i18nT('pages.devFleetPage.more_actions')} aria-label={i18nT('pages.devFleetPage.more_actions')} aria-haspopup="menu" aria-expanded={open} aria-busy={busy} data-testid={testId}>
+          <Ellipsis size={15} className="lucide-inline" />
+        </Btn>}
       {open && rect && <OverlayPortal>
         <div
           ref={menuRef}
@@ -160,6 +169,8 @@ export function MenuBtn({ items }: { items: (MenuItemDef | null)[] }) {
               ref={(el: HTMLDivElement | null) => { itemRefs.current[i] = el }}
               onClick={() => { close(); item.onClick() }}
               disabled={!!item.disabled}
+              title={item.hint}
+              data-testid={item.testId}
               style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left' as const, background: 'none', border: 'none', borderRadius: 7, padding: '7px 10px', fontSize: 12, color: item.danger ? 'var(--danger)' : 'var(--text)', cursor: item.disabled ? 'default' : 'pointer', opacity: item.disabled ? 0.5 : 1 } as CSSProperties}
             >
               {item.icon || null}{item.label}
