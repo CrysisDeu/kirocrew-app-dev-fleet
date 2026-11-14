@@ -169,7 +169,6 @@ export function ErrorNotice({
   footer,
   testId,
   askAgent,
-  actionPlacement,
 }: {
   message?: string | null
   title?: string
@@ -184,18 +183,17 @@ export function ErrorNotice({
   announce?: boolean
 }) {
   if (!message && !title) return null
-  // The host's layout: the copy in a `flex-1` text column; the Ask-the-agent
-  // hand-off beside it, or (actionPlacement "below") on its own row inside it.
-  const handoff = askAgent ? <div><button type="button">Ask the agent</button></div> : null
+  // The host's layout: the copy in a `flex-1` text column, then the action row
+  // (`data-notice-actions`) holding the Ask-the-agent hand-off, inside that column
+  // whatever `actionPlacement` says.
   return (
     <div role="alert" data-testid={testId}>
       <div className="flex-1">
         {title ? <strong>{title}</strong> : null}
         {message ? <span>{message}</span> : null}
-        {actionPlacement === 'below' ? handoff : null}
+        {footer ? <div>{footer}</div> : null}
+        {askAgent ? <div data-notice-actions=""><span><button type="button">Ask the agent</button></span></div> : null}
       </div>
-      {actionPlacement === 'below' ? null : handoff}
-      {footer}
       {onDismiss ? <button type="button" aria-label="Dismiss" onClick={onDismiss} /> : null}
     </div>
   )

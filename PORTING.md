@@ -14,8 +14,9 @@ repository. "Gap" means something the built-in gets from Kiro Crew that an
 external app has no public way to get today. Each gap is a Kiro Crew change (or an
 owner decision), not a change here.
 
-**This copy is not ready to pin.** Until the Kiro Crew change in gap 1 lands, Kiro
-Crew refuses any adoption pin for `dev-fleet`, whatever this tree holds.
+Gaps 1 and 3 are closed in Kiro Crew `main`, so a pin of this tree can adopt an
+existing user's built-in record. The gaps still open below block deleting the
+built-in from Kiro Crew, not pinning this copy.
 
 ## What carried over unchanged
 
@@ -54,24 +55,24 @@ Crew refuses any adoption pin for `dev-fleet`, whatever this tree holds.
 
 ## Remaining gaps
 
-1. **The pod tools move to this manifest (closed by the Kiro Crew change on branch
-   `fix/adoption-devfleet-tools`, not yet in the pinned `tests/kirocrew-commit.txt`).**
-   Kiro Crew refused every `dev-fleet` pin because its core MCP table (`TOOL_APPS`
-   in `mcp_tools/apps.py`) owned `pod_up`, `pod_restart`, `pod_down`, `pod_status`
-   and `pod_ls`. That change declares them in the wheel copy's `app.json` and
-   removes the core rows, so `core_named_apps()` no longer names this app. This
-   tree carries the same declaration (`agentTools`, namespace `pod`, so the names
-   agents, skills and policies know are kept) and serves it the same way:
-   `backend/agent_tools.py` runs each tool on the same `agent_pod_api` verb and
-   renders the same text, and `gateway_hooks.py` registers its one route,
-   `POST /api/apps/dev-fleet/agent-tools`, in the gateway (the backend is
-   sandboxed, so a pod verb cannot run there). The keys `namespace`,
-   `timeoutSeconds` and `result` are App Kit seam level 4, so a pin of this tree
-   sets `minAppSdkLevel` to 4; a host below level 2 ignores the block, and a
-   level-2 or level-3 host refuses it. The tests that need a host which reads those
-   keys skip on an older pinned Kiro Crew. Still open for pinning: listing an
-   adopted record's tools at all (`app_agent_tools` reads first-party built-in
-   records only) is a separate Kiro Crew change.
+1. **The pod tools move to this manifest (closed by kirodotdev/KiroCrew#33159 and
+   kirodotdev/KiroCrew#33141).** Kiro Crew refused every `dev-fleet` pin while its
+   core MCP table (`TOOL_APPS` in `mcp_tools/apps.py`) owned `pod_up`,
+   `pod_restart`, `pod_down`, `pod_status` and `pod_ls`. kirodotdev/KiroCrew#33159
+   declares them in the wheel copy's `app.json` and removes the core rows, so
+   `core_named_apps()` no longer names this app. This tree carries the same
+   declaration (`agentTools`, namespace `pod`, so the names agents, skills and
+   policies know are kept) and serves it the same way: `backend/agent_tools.py`
+   runs each tool on the same `agent_pod_api` verb and renders the same text, and
+   `gateway_hooks.py` registers its one route, `POST /api/apps/dev-fleet/agent-tools`,
+   in the gateway (the backend is sandboxed, so a pod verb cannot run there).
+   kirodotdev/KiroCrew#33141 lists an adopted record's tools only when its block
+   equals the wheel copy's tool for tool (name, description, `inputSchema`,
+   `maxResultChars` and the block's `route`), so this `app.json` carries the wheel
+   copy's block byte for byte (`tests/test_manifest_contract.py`). The keys
+   `namespace`, `timeoutSeconds` and `result` are App Kit seam level 4; the exact
+   `=/api/apps` entry of gap 3 is level 7, so a pin of this tree sets
+   `minAppSdkLevel` to 7.
 2. **Host grants come from the wheel's package.** The built-in's
    `host_grants.py` asks the host for: the BUILD rlimit profile for its backend
    (`apps/backend.py:1358-1365`), forwarding `KIROCREW_DEVFLEET_REPO` and
@@ -96,8 +97,8 @@ Crew refuses any adoption pin for `dev-fleet`, whatever this tree holds.
    its built-in already uses, declared in the wheel copy first), kirodotdev/KiroCrew#36344
    declares them in the built-in's manifest, and this `app.json` declares the same
    list: the routes as bare entries (none has a child), plus the built-in's
-   `create-release-worktree` (Kiro Crew #33391, which this copy has not ported
-   yet), and the list as `=/api/apps`, the exact entry that change adds at App Kit
+   `create-release-worktree` (kirodotdev/KiroCrew#33391, carried here, see "Fixes
+   since the port"), and the list as `=/api/apps`, the exact entry that change adds at App Kit
    seam level 7, since a bare `/api/apps` would also cover install, uninstall and
    every other app's routes. Every existing user's record approves that list
    before the pin, so adoption is no widening (`permission_refusal` answers
@@ -118,7 +119,7 @@ Crew refuses any adoption pin for `dev-fleet`, whatever this tree holds.
    release that moves one of these breaks the app (it fails to start; it never runs
    with a check skipped). Whether Kiro Crew publishes a backend SDK for spawned app
    processes is an open owner question, so this copy does not invent a bridge.
-   The suite runs against a Kiro Crew source checkout at the port commit (`tests/kirocrew-commit.txt`; CI clones it and installs it editable), as it ran inside Kiro Crew.
+   The suite runs against a Kiro Crew source checkout at the commit in `tests/kirocrew-commit.txt` (CI clones it and installs it editable), as it ran inside Kiro Crew; that commit moves forward when a wheel-copy change is carried here.
 5. **Execution trust.** A built-in's spawned backend and hook routes are admitted
    without a grant (`apps/backend.py:521`, `is_builtin_app`). This copy runs only
    when the operator trusts it; for an existing user, adoption writes that grant
@@ -178,6 +179,8 @@ bundle imports exists on a host before App Kit level 1
 | `dispatch(setPendingInput(prompt))` + `navigate('/chat?autoSend=1&newSession=1')` for QA + video | `useChatLauncher().openChat({ message, autoSend: true })` |
 | `components/ui` (`Card`, `CardTitle`, `Btn`, `EmptyState`, `ContentSkeleton`, `PageHeader`, `SearchInput`, `Badge`, `StatCard`), `InfoTip`, `Modal`, `Clickable`, `ErrorNotice` | The same components from `@kirocrew/app-sdk/ui` (`ui/src/host/ui.tsx`) |
 | `components/ui` `Checkbox` | Copied (`ui/src/host/ui.tsx`) |
+| `components/ui/dropdown-menu` (Radix) for the toolbar's More actions menu | The page's own `MenuBtn` (`DevFleetPageMenus.tsx`) with a labelled trigger: it opens on click, and its items are the host's `Clickable` buttons |
+| `react-i18next` `<Trans components>` | `i18nNodes` (`ui/src/i18nNodes.tsx`): each self-closing `<name/>` tag of the catalog string becomes the element passed for it |
 | `components/SimpleSelect` (Radix) | A themed native `<select>` with the same props (`ui/src/host/ui.tsx`); its open list is drawn by the browser |
 | `components/overlayRoot` (`OverlayPortal`, `useCloseWhenCrewHidden`) | `ui/src/host/overlay.tsx`: portals into `document.body`; the crew-overlay close signal has no bundle-side source, so it never fires |
 | `hooks/useImeGuard` `useDocumentImeLatch`, `hooks/useMenuKeyboard` `handleMenuKeydown`, `hooks/useDialogFocusTrap` | Copied into `ui/src/host/keyboard.ts`, without the crew-overlay signal |
@@ -198,15 +201,36 @@ bundle imports exists on a host before App Kit level 1
 
 ## Fixes since the port
 
-None yet: this tree was cut from Kiro Crew `main` at
-`6d07df11cfb64f4c3fda0466165c7a0ba3efe748`, the newest commit when it was made, so
-the built-in has had no fix this copy lacks. A fix that lands on the built-in
-after that commit is carried here with a patch-version bump.
+This tree was cut from Kiro Crew `main` at
+`6d07df11cfb64f4c3fda0466165c7a0ba3efe748`. Every change the built-in got after
+that commit, up to `46f62deab7468ec5d0ba153556a4f545b1966ec1`, is carried here, the
+backend, skills and tests through the same port changes as above, so each backend
+module differs from the wheel copy's only in its imports.
+
+| Kiro Crew change | What it changes for a user | Here |
+|---|---|---|
+| kirodotdev/KiroCrew#33272 | `pod_down` reports only once the pod has fully stopped; the tool waits up to 120 seconds for it | `worktree_ops.py`, `worktree_ops_pods.py`, the `pod_down` `timeoutSeconds` in `app.json` |
+| kirodotdev/KiroCrew#33254 | `pod_up` on a worktree inside a session's private scratch names that cause instead of "not found"; the `pod_up` description and the `pod-e2e` skill say where to create a worktree | `scratch_worktrees.py`, `repository.py`, `app.json`, `skills/pod-e2e/SKILL.md` |
+| kirodotdev/KiroCrew#33327 | The how-to paragraph above the table is one translated sentence per language, so Japanese, Korean, Hindi and Bengali read in their own word order | `ui/src/DevFleetPageNotices.tsx`, `ui/src/i18nNodes.tsx` (the bundle's stand-in for the dashboard's `<Trans components>`), `ui/i18n/*.json` |
+| kirodotdev/KiroCrew#33391 | **More actions → Create worktree from latest stable** checks out the newest stable release as `release-channel-stable`; **Refresh** moves into the same menu | `release_worktree.py`, `gateway_routes.py`, `runtime.py`, the page, `ui/i18n/*.json` |
+| kirodotdev/KiroCrew#33556, #33779 | The demo-recording skill finds its tools on Windows from absolute `PATH` entries, with `PATHEXT` applied | `skills/feature-demo-recording/references/` |
+| kirodotdev/KiroCrew#22686 | Provision checks that a worktree's build matches its inputs, not only that a build exists | `fleet_state.py`, `runtime.py` |
+| kirodotdev/KiroCrew#34762 | The backend reads the app's secret and approved grants from where the gateway keeps them, outside the app folder | `http_api.py` |
+| kirodotdev/KiroCrew#35199 | `pod_up` takes an optional `env` (`KIROCREW_KIRO_BIN` only) to point one pod at a test-double kiro-cli | `agent_pod_api.py`, `agent_tools.py`, `worktree_ops_pods.py`, `app.json`, `skills/pod-e2e/SKILL.md` |
+| kirodotdev/KiroCrew#31124 | A clean worktree whose pull request was closed can be pruned | `fleet_state.py`, `worktree_ops.py` |
+| kirodotdev/KiroCrew#32503 | A malformed request body is refused with a `code` as well as a sentence | `http_api.py` |
+
+Test-only changes carried with them: kirodotdev/KiroCrew#31863 (synthetic credentials,
+read here from `kiro_crew.testing.synthetic_credentials`), kirodotdev/KiroCrew#33542 and
+kirodotdev/KiroCrew#37263 (the host notice's action row, mirrored in
+`ui/tests/stubs/app-sdk-ui.tsx`). Kiro Crew's `test_dev_fleet_permission_parity.py`
+stays with Kiro Crew: it checks the wheel copy, and `tests/test_manifest_contract.py`
+checks this copy's list against it.
 
 ## What Kiro Crew keeps doing
 
-The built-in keeps running for every user until gap 1 is closed: adoption refuses
-this app before it fetches anything. After that, the release that adds the pin
+The built-in kept running for every user until gap 1 was closed: adoption refused
+this app before it fetched anything. After that, the release that adds the pin
 still ships the built-in, and a record that cannot move keeps running the
 built-in copy, unchanged.
 

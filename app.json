@@ -56,7 +56,7 @@
     "tools": [
       {
         "name": "pod_up",
-        "description": "Boot a Kiro Crew POD -- a complete preview gateway for one git worktree, on its own port with its own data directory -- and get back the {base_url, token} handle for driving it. On a host whose sandbox denies this session the systemd user bus, this is the only way to start a pod: a pod is a systemd --user unit, and `kirocrew pod up` in your shell then fails with `Permission denied`. Check with `systemctl --user is-system-running` if you want to know which case you are in; either way this tool works, because the gateway holds the host bus and does the systemd part for you. Use it to test an unfinished change end to end without touching the live gateway. Blocking: it returns once the pod answers its own health check, a few seconds for a worktree that is already built. A worktree with no built dist is REFUSED with the CLI's own remedy in the message -- provisioning (venv + SPA build) is minutes of work and is not reachable from here; run it from the Dev Fleet page or `kirocrew pod provision <wt>`. Requires the Dev Fleet app to be enabled. The returned token is scoped to that pod alone; it is not the live gateway's, and no secret of the host is exposed by it. It carries two limits, and the reply names both: the token itself is accepted only within a short link window (5 minutes), and the first request that carries it opens a pod session, kept in a cookie, that lasts 2h. Use the token straight away and drive the pod with that session; past the window the pod refuses the token as expired. Calling pod_up again on a running pod leaves it running and returns a fresh token. Release the pod with `pod_down` when done -- a pod holds a port and memory until it is stopped. `memory` and `cpu` set the pod's ceilings (default 4G and 200%); on a pod that is already running they are recorded and take effect with `pod_restart` (on Windows, with `pod_down` then `pod_up`).",
+        "description": "Boot a Kiro Crew POD -- a complete preview gateway for one git worktree, on its own port with its own data directory -- and get back the {base_url, token} handle for driving it. On a host whose sandbox denies this session the systemd user bus, this is the only way to start a pod: a pod is a systemd --user unit, and `kirocrew pod up` in your shell then fails with `Permission denied`. Check with `systemctl --user is-system-running` if you want to know which case you are in; either way this tool works, because the gateway holds the host bus and does the systemd part for you. Use it to test an unfinished change end to end without touching the live gateway. Blocking: it returns once the pod answers its own health check, a few seconds for a worktree that is already built. A worktree with no built dist is REFUSED with the CLI's own remedy in the message -- provisioning (venv + SPA build) is minutes of work and is not reachable from here; run it from the Dev Fleet page or `kirocrew pod provision <wt>`. Create the worktree under `<repo>/.worktrees/<name>`, never under `$KIROCREW_SCRATCH`: a session's scratch is private to it, so Dev Fleet cannot see a worktree there and refuses it. Requires the Dev Fleet app to be enabled. The returned token is scoped to that pod alone; it is not the live gateway's, and no secret of the host is exposed by it. It carries two limits, and the reply names both: the token itself is accepted only within a short link window (5 minutes), and the first request that carries it opens a pod session, kept in a cookie, that lasts 2h. Use the token straight away and drive the pod with that session; past the window the pod refuses the token as expired. Calling pod_up again on a running pod leaves it running and returns a fresh token. Release the pod with `pod_down` when done -- a pod holds a port and memory until it is stopped. `memory` and `cpu` set the pod's ceilings (default 4G and 200%); on a pod that is already running they are recorded and take effect with `pod_restart` (on Windows, with `pod_down` then `pod_up`).",
         "inputSchema": {
           "type": "object",
           "properties": {
@@ -74,6 +74,15 @@
               "type": "string",
               "description": "Optional CPU ceiling, e.g. '800%' for eight cores (default 200%, capped at the host CPU count). Kept across restarts",
               "maxLength": 16
+            },
+            "env": {
+              "type": "array",
+              "description": "Optional environment overrides for the pod's gateway, as KEY=VALUE strings, to point it at a test double. Only KIROCREW_KIRO_BIN is accepted: an absolute path to an executable, such as a fake kiro-cli that fails the way you want to see, e.g. ['KIROCREW_KIRO_BIN=/abs/path/fake-kiro-cli']. With it set, a kiro-cli that cannot start no longer stops the pod from booting, so the error shows in the pod's UI. Other keys are refused. Each pod_up replaces the overrides, so a pod_up without env clears them; pod_restart keeps them",
+              "items": {
+                "type": "string",
+                "maxLength": 1100
+              },
+              "maxItems": 4
             }
           },
           "required": [
@@ -131,7 +140,7 @@
           ]
         },
         "maxResultChars": 60000,
-        "timeoutSeconds": 60,
+        "timeoutSeconds": 120,
         "result": "text"
       },
       {
