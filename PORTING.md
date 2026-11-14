@@ -20,7 +20,8 @@ built-in from Kiro Crew, not pinning this copy.
 
 ## What carried over unchanged
 
-- `app.json` `name` (`dev-fleet`), `version` (`1.0.0`), `permissions`
+- `app.json` `name` (`dev-fleet`), `version` (`1.0.0` at the port, `1.0.1` with the
+  fixes below), `permissions`
   (`api: ["/apps/dev-fleet/api", "/apps/dev-fleet/api/*"]` plus the host routes
   of gap 3, `network`, `terminal`),
   `platform`, `defaultEnabled` (`false`), `skills`, and every display field.
@@ -205,7 +206,9 @@ This tree was cut from Kiro Crew `main` at
 `6d07df11cfb64f4c3fda0466165c7a0ba3efe748`. Every change the built-in got after
 that commit, up to `46f62deab7468ec5d0ba153556a4f545b1966ec1`, is carried here, the
 backend, skills and tests through the same port changes as above, so each backend
-module differs from the wheel copy's only in its imports.
+module differs from the wheel copy's only in its imports. They ship as `1.0.1`; a
+first adoption pin's version equals the wheel copy's, so the Kiro Crew change that
+pins this release sets the wheel copy to `1.0.1` with it.
 
 | Kiro Crew change | What it changes for a user | Here |
 |---|---|---|
